@@ -1,5 +1,3 @@
-import React from "react";
-
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
@@ -14,7 +12,7 @@ const DeleteAthleteModal = ({
 }) => {
   let athlete;
   for (let a of athletes) {
-    if (a.person_id == person_id) {
+    if (a.person_id === person_id) {
       athlete = a;
       break;
     }
@@ -32,7 +30,7 @@ const DeleteAthleteModal = ({
         console.error(err);
       });
 
-    setAthletes(athletes.filter((athlete) => athlete.person_id != person_id));
+    setAthletes(athletes.filter((athlete) => athlete.person_id !== person_id));
   };
 
   return (

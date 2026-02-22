@@ -9,8 +9,6 @@ import Container from "react-bootstrap/esm/Container";
 
 const ViewAthleteModal = ({
   person_id,
-  athletes,
-  setAthletes,
   showViewAthlete,
   setShowViewAthlete,
 }) => {
@@ -31,7 +29,7 @@ const ViewAthleteModal = ({
       });
   }, []);
 
-  const [teams, setTeams] = useState([]);
+  const [, setTeams] = useState([]);
 
   useEffect(() => {
     axios

@@ -97,7 +97,7 @@ const EditAthleteModal = ({
         });
 
       const updatedAthletes = athletes.map((obj) => {
-        if (obj.person_id == person_id) {
+        if (obj.person_id === person_id) {
           return {
             person_id: athlete.person_id,
             name: athlete.name,
