@@ -4,7 +4,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const bodyParser = require('body-parser')
+const bodyParser = require("body-parser");
 const controller = require("./controller");
 
 const loadEnvFile = require("./utils/envUtil");
@@ -26,5 +26,5 @@ app.use(express.json());
 
 // Starting the server
 app.listen(PORT, () => {
-	console.log(`Server running at http://localhost:${PORT}/`);
+  console.log(`Server running at http://localhost:${PORT}/`);
 });
