@@ -1,8 +1,8 @@
 // From https://github.students.cs.ubc.ca/CPSC304/CPSC304_Node_Project
 
-const fs = require("fs");
+import fs from "fs";
 
-function loadEnvFile(filePath) {
+const loadEnvFile = (filePath) => {
   if (fs.existsSync(filePath)) {
     const envFile = fs.readFileSync(filePath, "utf8");
 
@@ -20,6 +20,6 @@ function loadEnvFile(filePath) {
     console.error(`.env file not found at ${filePath}`);
     return {};
   }
-}
+};
 
-module.exports = loadEnvFile;
+export default loadEnvFile;

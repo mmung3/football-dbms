@@ -1,5 +1,6 @@
-const express = require("express");
-const {
+import express from "express";
+import queryToJson from "./utils/helpers.js";
+import {
   testOracleConnection,
   getAllNamePositionTeam,
   getTeams,
@@ -22,11 +23,9 @@ const {
   getVenues,
   findGames,
   filterSponsor,
-} = require("./dbQueries");
+} from "./dbQueries.js";
 
 const router = express.Router();
-
-const queryToJson = require("./utils/helpers");
 
 router.get("/check-db-connection", async (req, res) => {
   const isConnect = await testOracleConnection();
@@ -226,4 +225,4 @@ router.post("/filter-sponsor", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

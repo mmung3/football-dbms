@@ -1,8 +1,9 @@
 {
-  "name": "Group 2 Project",
+  "name": "server",
   "version": "1.0.0",
   "description": "Group 2 Project",
   "main": "server.js",
+  "type": "module",
   "keywords": [],
   "author": {
     "name": "Group 2"

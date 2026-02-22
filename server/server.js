@@ -1,13 +1,13 @@
 // Server Model (server.js, dbQueries.js, controller.js) inspired by
 // https://github.students.cs.ubc.ca/CPSC304/CPSC304_Node_Project
 
-const express = require("express");
-const app = express();
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const controller = require("./controller");
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import controller from "./controller.js";
+import loadEnvFile from "./utils/envUtil.js";
 
-const loadEnvFile = require("./utils/envUtil");
+const app = express();
 const envVariables = loadEnvFile("../.env");
 const PORT = envVariables.PORT || 65534; // Adjust the PORT if needed (e.g., if you encounter a "port already occupied" error)
 

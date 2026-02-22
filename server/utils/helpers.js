@@ -18,4 +18,4 @@ const queryToJson = (result) => {
   return toJson;
 };
 
-module.exports = queryToJson;
+export default queryToJson;

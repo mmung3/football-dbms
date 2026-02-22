@@ -1,7 +1,9 @@
-const oracledb = require("oracledb");
+import oracledb from "oracledb";
+import loadEnvFile from "./utils/envUtil.js";
 
-const loadEnvFile = require("./utils/envUtil");
 const envVariables = loadEnvFile("../.env");
+
+// FIXME: need to do migration here
 
 // Database configuration setup. Ensure your .env file has the required database credentials.
 const DB_CONFIG = {
@@ -40,7 +42,7 @@ const withOracleDB = async (action) => {
   }
 };
 
-const testOracleConnection = async () => {
+export const testOracleConnection = async () => {
   return await withOracleDB(async (connection) => {
     console.log("Oracle connection success!");
     return true;
@@ -50,7 +52,7 @@ const testOracleConnection = async () => {
   });
 };
 
-const getAllNamePositionTeam = () => {
+export const getAllNamePositionTeam = () => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -66,7 +68,7 @@ const getAllNamePositionTeam = () => {
   });
 };
 
-const getTeams = () => {
+export const getTeams = () => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -81,7 +83,7 @@ const getTeams = () => {
   });
 };
 
-const getPositions = () => {
+export const getPositions = () => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -96,7 +98,7 @@ const getPositions = () => {
   });
 };
 
-const insertAthlete = (body) => {
+export const insertAthlete = (body) => {
   const {
     person_id,
     name,
@@ -152,7 +154,7 @@ const insertAthlete = (body) => {
   });
 };
 
-const deleteAthlete = (person_id) => {
+export const deleteAthlete = (person_id) => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -169,7 +171,7 @@ const deleteAthlete = (person_id) => {
   });
 };
 
-const getAthlete = (person_id) => {
+export const getAthlete = (person_id) => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -185,7 +187,7 @@ const getAthlete = (person_id) => {
   });
 };
 
-const updateAthlete = (body) => {
+export const updateAthlete = (body) => {
   const {
     person_id,
     name,
@@ -229,7 +231,7 @@ const updateAthlete = (body) => {
   });
 };
 
-const getPlayerAwards = (person_id) => {
+export const getPlayerAwards = (person_id) => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -245,7 +247,7 @@ const getPlayerAwards = (person_id) => {
   });
 };
 
-const getTables = () => {
+export const getTables = () => {
   return withOracleDB((connection) => {
     // not allowing user to see certain "private" tables, but otherwise is dynamic
     // https://www.sqltutorial.org/sql-list-all-tables/
@@ -268,7 +270,7 @@ const getTables = () => {
   });
 };
 
-const getAttributes = (table_name) => {
+export const getAttributes = (table_name) => {
   // https://stackoverflow.com/a/32240681
   return withOracleDB((connection) => {
     return connection
@@ -285,7 +287,7 @@ const getAttributes = (table_name) => {
   });
 };
 
-const getTable = (body) => {
+export const getTable = (body) => {
   const { table, attributes } = body;
 
   return withOracleDB((connection) => {
@@ -297,7 +299,7 @@ const getTable = (body) => {
   });
 };
 
-const getStandings = () => {
+export const getStandings = () => {
   const query = `WITH GamesPerTeam AS (
 			SELECT t.team_name, COUNT(*) as games_played
 			FROM Game g, Team t, ParticipatesIn p
@@ -427,7 +429,7 @@ const getStandings = () => {
   });
 };
 
-const getMaxAvgGoalsPerGame = () => {
+export const getMaxAvgGoalsPerGame = () => {
   const query = `WITH GoalsPerAthlete AS (
 			SELECT s.STATS_ID, s.PERSON_ID, s.GAME_ID, SUM(s.goals) AS total_goals
 			FROM Athlete a, Statistics s
@@ -473,7 +475,7 @@ const getMaxAvgGoalsPerGame = () => {
   });
 };
 
-const getFourMostRecentGames = (limit) => {
+export const getFourMostRecentGames = (limit) => {
   const rowsToFetch = limit ? `FETCH FIRST ${limit} ROWS ONLY` : "";
 
   const query = `
@@ -529,7 +531,7 @@ const getFourMostRecentGames = (limit) => {
   });
 };
 
-const getTeamsByCoachExp = () => {
+export const getTeamsByCoachExp = () => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -547,7 +549,7 @@ const getTeamsByCoachExp = () => {
   });
 };
 
-const getRefsInAllGames = () => {
+export const getRefsInAllGames = () => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -569,7 +571,7 @@ const getRefsInAllGames = () => {
   });
 };
 
-const findPhoneNumber = (body) => {
+export const findPhoneNumber = (body) => {
   const { person_id, phone_number } = body;
 
   return withOracleDB((connection) => {
@@ -595,7 +597,7 @@ const findPhoneNumber = (body) => {
   });
 };
 
-const findEmail = (body) => {
+export const findEmail = (body) => {
   const { person_id, email } = body;
 
   return withOracleDB((connection) => {
@@ -621,7 +623,7 @@ const findEmail = (body) => {
   });
 };
 
-const getVenues = () => {
+export const getVenues = () => {
   return withOracleDB((connection) => {
     return connection
       .execute(
@@ -636,7 +638,7 @@ const getVenues = () => {
   });
 };
 
-const findGames = (body) => {
+export const findGames = (body) => {
   const { venueName } = body;
   return withOracleDB((connection) => {
     return connection
@@ -654,7 +656,7 @@ const findGames = (body) => {
   });
 };
 
-const filterSponsor = (body) => {
+export const filterSponsor = (body) => {
   const { whereClause } = body;
 
   const where = whereClause ? `WHERE ${whereClause}` : "";
@@ -672,29 +674,4 @@ const filterSponsor = (body) => {
         throw err;
       });
   });
-};
-
-module.exports = {
-  testOracleConnection,
-  getAllNamePositionTeam,
-  getTeams,
-  getPositions,
-  insertAthlete,
-  deleteAthlete,
-  getAthlete,
-  updateAthlete,
-  getPlayerAwards,
-  getTables,
-  getAttributes,
-  getTable,
-  getStandings,
-  getMaxAvgGoalsPerGame,
-  getFourMostRecentGames,
-  getTeamsByCoachExp,
-  getRefsInAllGames,
-  findPhoneNumber,
-  findEmail,
-  getVenues,
-  findGames,
-  filterSponsor,
 };
