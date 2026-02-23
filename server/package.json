@@ -12,7 +12,8 @@
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
     "express": "^4.17.3",
-    "oracledb": "^6.2.0"
+    "pg": "^8.18.0"
   }
 }

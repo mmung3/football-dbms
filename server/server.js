@@ -5,11 +5,11 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import controller from "./controller.js";
-import loadEnvFile from "./utils/envUtil.js";
+import dotenv from "dotenv";
 
+dotenv.config({ path: "../.env" });
 const app = express();
-const envVariables = loadEnvFile("../.env");
-const PORT = envVariables.PORT || 65534; // Adjust the PORT if needed (e.g., if you encounter a "port already occupied" error)
+const PORT = process.env.PORT || 65534; // Adjust the PORT if needed (e.g., if you encounter a "port already occupied" error)
 
 // Middleware setup
 // CORS to allow front end to query backend
