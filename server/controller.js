@@ -1,7 +1,6 @@
 import express from "express";
-import queryToJson from "./utils/helpers.js";
 import {
-  testOracleConnection,
+  testPostgresConnection,
   getAllNamePositionTeam,
   getTeams,
   getPositions,
@@ -27,19 +26,27 @@ import {
 
 const router = express.Router();
 
+router.get("/", (req, res) => {
+  res.send("<h1>200 OK</h1>");
+});
+
 router.get("/check-db-connection", async (req, res) => {
-  const isConnect = await testOracleConnection();
-  if (isConnect) {
-    res.send("Connected!");
+  const result = await testPostgresConnection();
+  if (result) {
+    const message = {
+      message: "Connection successful",
+      time: result.rows[0].now,
+    };
+    res.status(200).json(message);
   } else {
-    res.send("Unable to connect!");
+    res.status(400).json({ error: "Unable to connect to the database" });
   }
 });
 
 router.get("/name-position-team", async (req, res) => {
   let result = await getAllNamePositionTeam();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -48,7 +55,7 @@ router.get("/name-position-team", async (req, res) => {
 router.get("/teams", async (req, res) => {
   let result = await getTeams();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -57,7 +64,7 @@ router.get("/teams", async (req, res) => {
 router.get("/positions", async (req, res) => {
   let result = await getPositions();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -66,7 +73,7 @@ router.get("/positions", async (req, res) => {
 router.get("/athlete/:person_id", async (req, res) => {
   let result = await getAthlete(req.params.person_id);
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -102,7 +109,7 @@ router.put("/athlete", async (req, res) => {
 router.get("/awards/athlete/:person_id", async (req, res) => {
   let result = await getPlayerAwards(req.params.person_id);
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -111,7 +118,7 @@ router.get("/awards/athlete/:person_id", async (req, res) => {
 router.get("/tables", async (req, res) => {
   let result = await getTables();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -120,7 +127,7 @@ router.get("/tables", async (req, res) => {
 router.get("/table/:table_name/attributes", async (req, res) => {
   let result = await getAttributes(req.params.table_name);
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -129,7 +136,7 @@ router.get("/table/:table_name/attributes", async (req, res) => {
 router.post("/table", async (req, res) => {
   let result = await getTable(req.body);
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -138,7 +145,7 @@ router.post("/table", async (req, res) => {
 router.get("/standings", async (req, res) => {
   let result = await getStandings();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -147,7 +154,7 @@ router.get("/standings", async (req, res) => {
 router.get("/max-avg-goals-per-game", async (req, res) => {
   let result = await getMaxAvgGoalsPerGame();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -156,7 +163,7 @@ router.get("/max-avg-goals-per-game", async (req, res) => {
 router.get("/recent-games", async (req, res) => {
   let result = await getFourMostRecentGames(req.query.limit || null);
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -165,7 +172,7 @@ router.get("/recent-games", async (req, res) => {
 router.get("/teams-by-coach-exp", async (req, res) => {
   let result = await getTeamsByCoachExp();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -174,7 +181,7 @@ router.get("/teams-by-coach-exp", async (req, res) => {
 router.get("/refs-in-all-games", async (req, res) => {
   let result = await getRefsInAllGames();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -201,7 +208,7 @@ router.post("/email-exists", async (req, res) => {
 router.get("/venues", async (req, res) => {
   let result = await getVenues();
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -210,7 +217,7 @@ router.get("/venues", async (req, res) => {
 router.post("/find-games", async (req, res) => {
   let result = await findGames(req.body);
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }
@@ -219,7 +226,7 @@ router.post("/find-games", async (req, res) => {
 router.post("/filter-sponsor", async (req, res) => {
   let result = await filterSponsor(req.body);
   if (result) {
-    res.status(200).json(queryToJson(result));
+    res.status(200).json(result.rows);
   } else {
     res.status(404).send("Not found");
   }

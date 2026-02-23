@@ -1,101 +1,43 @@
-import oracledb from "oracledb";
-import loadEnvFile from "./utils/envUtil.js";
+import { pool } from "./dbConnection.js";
 
-const envVariables = loadEnvFile("../.env");
-
-// FIXME: need to do migration here
-
-// Database configuration setup. Ensure your .env file has the required database credentials.
-const DB_CONFIG = {
-  user: envVariables.ORACLE_USER,
-  password: envVariables.ORACLE_PASS,
-  connectString: `${envVariables.ORACLE_HOST}:${envVariables.ORACLE_PORT}/${envVariables.ORACLE_DBNAME}`,
-  poolMax: 1,
-};
-
-// Wrapper to manage OracleDB actions, simplifying connection handling.
-// https://piazza.com/class/lkk1xyugpas6fo/post/545
-let poolMade = false;
-let pool;
-const withOracleDB = async (action) => {
-  let connection;
+export const testPostgresConnection = async () => {
   try {
-    if (!poolMade) {
-      await oracledb.createPool(DB_CONFIG);
-      pool = oracledb.getPool();
-      poolMade = true;
-    }
-
-    connection = await pool.getConnection();
-    return await action(connection);
+    const result = await pool.query("SELECT NOW()");
+    return result;
   } catch (err) {
-    console.error(err);
     throw err;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error(err);
-      }
-    }
   }
 };
 
-export const testOracleConnection = async () => {
-  return await withOracleDB(async (connection) => {
-    console.log("Oracle connection success!");
-    return true;
-  }).catch(() => {
-    console.log("Oracle connection failed!");
-    return false;
-  });
-};
-
 export const getAllNamePositionTeam = () => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
+  try {
+    const result = pool.query(`
 			SELECT person_id, name, position, current_team as team
 			FROM Athlete, PositionDetails
 			WHERE Athlete.jersey_num = PositionDetails.jersey_num
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+		`);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getTeams = () => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT team_name
-			FROM Team
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(`SELECT team_name FROM Team`);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getPositions = () => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT *
-			FROM PositionDetails
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(`SELECT * FROM PositionDetails`);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const insertAthlete = (body) => {
@@ -114,77 +56,49 @@ export const insertAthlete = (body) => {
     salary,
   } = body;
 
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			INSERT INTO Athlete VALUES (
-				:person_id, 
-				:name, 
-				TO_DATE(:birthdate, 'YYYY-MM-DD'),
-				:height, 
-				:weight, 
-				:phone_number, 
-				:email, 
-				:address, 
-				TO_DATE(:date_started, 'YYYY-MM-DD'),
-				:jersey_num, 
-				:current_team, 
-				:salary
-			)`,
-        [
-          person_id,
-          name,
-          birthdate,
-          height,
-          weight,
-          phone_number,
-          email,
-          address,
-          date_started,
-          jersey_num,
-          current_team,
-          salary,
-        ],
-        { autoCommit: true },
+  try {
+    const result = pool.query(`
+      INSERT INTO Athlete VALUES (
+        ${person_id}, 
+        '${name}', 
+        '${birthdate}',
+        ${height}, 
+        ${weight}, 
+        ${phone_number}, 
+        '${email}', 
+        '${address}', 
+        '${date_started}',
+        ${jersey_num}, 
+        '${current_team}', 
+        ${salary}
       )
-      .catch((err) => {
-        throw err;
-      });
-  });
+    `);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const deleteAthlete = (person_id) => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-				DELETE FROM Athlete
-				WHERE person_id = :person_id
-			`,
-        [person_id],
-        { autoCommit: true },
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `DELETE FROM Athlete WHERE person_id = ${person_id}`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getAthlete = (person_id) => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT *
-			FROM Athlete
-			WHERE Athlete.person_id = ${person_id}
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `SELECT * FROM Athlete WHERE Athlete.person_id = ${person_id}`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const updateAthlete = (body) => {
@@ -203,100 +117,73 @@ export const updateAthlete = (body) => {
     salary,
   } = body;
 
-  // for some reason bind parameters don't work here...
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-				UPDATE Athlete 
-				SET name='${name}',
-					birthdate=TO_DATE('${birthdate}', 'YYYY-MM-DD'),
-					height=${height}, 
-					weight=${weight}, 
-					phone_number=${phone_number}, 
-					email='${email}', 
-					address='${address}', 
-					date_started=TO_DATE('${date_started}', 'YYYY-MM-DD'),
-					jersey_num=${jersey_num}, 
-					current_team='${current_team}', 
-					salary=${salary}
-				WHERE person_id=${person_id}
-			`,
-        [],
-        { autoCommit: true },
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(`
+      UPDATE Athlete 
+      SET name='${name}',
+        birthdate='${birthdate}',
+        height=${height}, 
+        weight=${weight}, 
+        phone_number=${phone_number}, 
+        email='${email}', 
+        address='${address}', 
+        date_started='${date_started}',
+        jersey_num=${jersey_num}, 
+        current_team='${current_team}', 
+        salary=${salary}
+      WHERE person_id=${person_id}
+    `);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getPlayerAwards = (person_id) => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT Athlete.person_id, Awards.year, Awards.award_name
-			FROM Athlete, WinsAward, Awards
-			WHERE Athlete.person_id=WinsAward.person_id AND WinsAward.award_id=Awards.award_id AND Athlete.person_id=${person_id}
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `SELECT Athlete.person_id, Awards.year, Awards.award_name FROM Athlete, WinsAward, Awards WHERE Athlete.person_id=WinsAward.person_id AND WinsAward.award_id=Awards.award_id AND Athlete.person_id=${person_id}`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getTables = () => {
-  return withOracleDB((connection) => {
-    // not allowing user to see certain "private" tables, but otherwise is dynamic
-    // https://www.sqltutorial.org/sql-list-all-tables/
-    return connection
-      .execute(
-        `
-			SELECT table_name
-			FROM user_tables
-			WHERE table_name <> 'PARTICIPATESIN' AND
-				table_name <> 'LOCATEDIN' AND
-				table_name <> 'HASSPONSOR' AND
-				table_name <> 'GIVENBY' AND
-				table_name <> 'WINSAWARD' AND
-				table_name <> 'REFEREES'
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  // not allowing user to see certain "private" tables, but otherwise is dynamic
+  // Postgres uses information_schema instead of Oracle's user_tables
+  try {
+    const result = pool.query(
+      `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name NOT IN ('participatesin', 'locatedin', 'hassponsor', 'givenby', 'winsaward', 'referees')`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getAttributes = (table_name) => {
-  // https://stackoverflow.com/a/32240681
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT column_name
-			FROM USER_TAB_COLS
-			WHERE table_name=UPPER('${table_name}')
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  // Postgres uses information_schema instead of Oracle's USER_TAB_COLS
+  try {
+    const result = pool.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name='${table_name.toLowerCase()}'`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getTable = (body) => {
   const { table, attributes } = body;
 
-  return withOracleDB((connection) => {
-    return connection
-      .execute(`SELECT ${attributes.toString()} FROM ${table}`)
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(`SELECT ${attributes.toString()} FROM ${table}`);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getStandings = () => {
@@ -422,11 +309,12 @@ export const getStandings = () => {
 		ORDER BY WinCount DESC
 	`;
 
-  return withOracleDB((connection) => {
-    return connection.execute(query).catch((err) => {
-      throw err;
-    });
-  });
+  try {
+    const result = pool.query(query);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getMaxAvgGoalsPerGame = () => {
@@ -468,192 +356,120 @@ export const getMaxAvgGoalsPerGame = () => {
 										GROUP BY a.team)
 	`;
 
-  return withOracleDB((connection) => {
-    return connection.execute(query).catch((err) => {
-      throw err;
-    });
-  });
+  try {
+    const result = pool.query(query);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getFourMostRecentGames = (limit) => {
-  const rowsToFetch = limit ? `FETCH FIRST ${limit} ROWS ONLY` : "";
+  const rowsToFetch = limit ? `LIMIT ${limit}` : "";
 
   const query = `
-		SELECT game_date, home, home_goals, away, away_goals
-		FROM ( -- home TEAM NAME AND home TEAM GOALS
-			SELECT hg.game_id, home, "SUM(GOALS)" AS home_goals
-			FROM (
-				SELECT SUM(GOALS), st.game_id -- all goals in all matches
-				FROM ( -- person_id for home team.
-					SELECT person_id, game_id
-					FROM ( SELECT home, game_id
-							FROM game
-							ORDER BY game_date DESC
-							${rowsToFetch} ) g, Athlete a
-					WHERE g.home = a.current_team ) pn , Statistics st
-				WHERE pn.PERSON_ID = st.PERSON_ID AND pn.game_id = st.game_id
-				GROUP BY st.game_id ) hg, (
-						SELECT game_id, home -- game id
-							FROM game
-							ORDER BY game_date DESC
-							${rowsToFetch} ) hgid
-			WHERE hg.game_id = hgid.game_id) hid, ( -- away TEAM NAME AND away TEAM GOALS
-			SELECT hg.game_id, away, "SUM(GOALS)" AS away_goals
-			FROM (
-				SELECT SUM(GOALS), st.game_id -- all goals in all matches
-				FROM ( -- person_id for away team.
-					SELECT person_id, game_id
-					FROM (
-						SELECT away, game_id
-						FROM game
-						ORDER BY game_date DESC
-						${rowsToFetch} ) g, Athlete a
-					WHERE g.away = a.current_team ) pn , Statistics st
-				WHERE pn.PERSON_ID = st.PERSON_ID AND pn.game_id = st.game_id
-				GROUP BY st.game_id ) hg, (
-						SELECT game_id, away -- game id
-							FROM game
-							ORDER BY game_date DESC
-							${rowsToFetch} ) hgid
-			WHERE hg.game_id = hgid.game_id) aid ,
-			( -- game date
-			SELECT game_date, game_id
-			FROM game
-			ORDER BY game_date DESC
-			${rowsToFetch}) did
-		WHERE hid.game_id = aid.game_id AND did.game_id = hid.game_id
+	SELECT 
+			g.game_date,
+			g.home AS home_team,
+			COALESCE(home_stats.home_goals, 0) AS home_goals,
+			g.away AS away_team,
+			COALESCE(away_stats.away_goals, 0) AS away_goals
+	FROM game g
+	-- Aggregate goals for home team
+	LEFT JOIN (
+			SELECT s.game_id, a.current_team, SUM(s.goals) AS home_goals
+			FROM statistics s
+			JOIN athlete a ON s.person_id = a.person_id
+			GROUP BY s.game_id, a.current_team
+	) home_stats
+			ON g.game_id = home_stats.game_id AND g.home = home_stats.current_team
+	-- Aggregate goals for away team
+	LEFT JOIN (
+			SELECT s.game_id, a.current_team, SUM(s.goals) AS away_goals
+			FROM statistics s
+			JOIN athlete a ON s.person_id = a.person_id
+			GROUP BY s.game_id, a.current_team
+	) away_stats
+			ON g.game_id = away_stats.game_id AND g.away = away_stats.current_team
+	ORDER BY g.game_date DESC
+	${rowsToFetch};
 	`;
 
-  return withOracleDB((connection) => {
-    return connection.execute(query).catch((err) => {
-      throw err;
-    });
-  });
+  try {
+    const result = pool.query(query);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getTeamsByCoachExp = () => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT current_team, AVG(EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM date_started)) AS avgCoachingYears
-			FROM Coach
-			GROUP BY current_team
-			HAVING AVG(EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM date_started)) > 15
-			ORDER BY avgCoachingYears DESC
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `SELECT current_team, AVG(EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM date_started)) AS avgCoachingYears FROM Coach GROUP BY current_team HAVING AVG(EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM date_started)) > 15 ORDER BY avgCoachingYears DESC`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getRefsInAllGames = () => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT r.NAME, r.CERTIFICATION_LEVEL
-			FROM Referee r
-			WHERE NOT EXISTS
-				((SELECT g.game_id
-				FROM Game g)
-				MINUS
-				(SELECT rs.game_id
-				FROM Referees rs
-				WHERE r.PERSON_ID = rs.PERSON_ID))
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `SELECT r.NAME, r.CERTIFICATION_LEVEL FROM Referee r WHERE NOT EXISTS ((SELECT g.game_id FROM Game g) EXCEPT (SELECT rs.game_id FROM Referees rs WHERE r.PERSON_ID = rs.PERSON_ID))`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const findPhoneNumber = (body) => {
   const { person_id, phone_number } = body;
 
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT phone_number
-			FROM (
-				SELECT person_id, phone_number
-				FROM Athlete
-				UNION
-				SELECT person_id, phone_number
-				FROM Coach
-				UNION
-				SELECT person_id, phone_number
-				FROM Referee )
-			WHERE phone_number=${phone_number} AND person_id<>${person_id}
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `SELECT phone_number FROM (SELECT person_id, phone_number FROM Athlete UNION SELECT person_id, phone_number FROM Coach UNION SELECT person_id, phone_number FROM Referee) WHERE phone_number=${phone_number} AND person_id<>${person_id}`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const findEmail = (body) => {
   const { person_id, email } = body;
 
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT email
-			FROM (
-				SELECT person_id, email
-				FROM Athlete
-				UNION
-				SELECT person_id, email
-				FROM Coach
-				UNION
-				SELECT person_id, email
-				FROM Referee )
-			WHERE email='${email}' AND person_id<>${person_id}
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `SELECT email FROM (SELECT person_id, email FROM Athlete UNION SELECT person_id, email FROM Coach UNION SELECT person_id, email FROM Referee) WHERE email='${email}' AND person_id<>${person_id}`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const getVenues = () => {
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT *
-			FROM Venue
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(`SELECT * FROM Venue`);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const findGames = (body) => {
   const { venueName } = body;
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
-			SELECT TO_CHAR(g.game_date, 'YYYY-MM-DD'), g.home, g.away, v.venue_address
-			FROM Game g, LocatedIn l, Venue v
-			WHERE g.GAME_ID = l.GAME_ID AND l.venue_address = v.venue_address AND v.venue_name = '${venueName}'
-			ORDER BY g.game_date DESC
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+  try {
+    const result = pool.query(
+      `SELECT g.game_date::text, g.home, g.away, v.venue_address FROM Game g, LocatedIn l, Venue v WHERE g.GAME_ID = l.GAME_ID AND l.venue_address = v.venue_address AND v.venue_name = '${venueName}' ORDER BY g.game_date DESC`,
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const filterSponsor = (body) => {
@@ -661,17 +477,14 @@ export const filterSponsor = (body) => {
 
   const where = whereClause ? `WHERE ${whereClause}` : "";
 
-  return withOracleDB((connection) => {
-    return connection
-      .execute(
-        `
+  try {
+    const result = pool.query(`
 			SELECT *
 			FROM Sponsor
 			${where}
-		`,
-      )
-      .catch((err) => {
-        throw err;
-      });
-  });
+		`);
+    return result;
+  } catch (err) {
+    throw err;
+  }
 };
