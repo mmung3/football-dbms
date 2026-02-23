@@ -50,14 +50,16 @@ const EditAthleteModal = ({
   const [athlete, setAthlete] = useState({});
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:65535/athlete/${person_id}`)
-      .then((res) => {
-        setAthlete(res.data[0]);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+    if (person_id) {
+      axios
+        .get(`http://localhost:65535/athlete/${person_id}`)
+        .then((res) => {
+          setAthlete(res.data[0]);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
   }, [person_id, showEditAthlete]);
 
   const handleFormChange = (e) => {

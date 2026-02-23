@@ -21,7 +21,7 @@ const Games = () => {
       .catch((err) => {
         console.error(err);
       });
-  });
+  }, []);
 
   return (
     <Container style={{ marginTop: "20px" }}>

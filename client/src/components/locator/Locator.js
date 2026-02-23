@@ -21,7 +21,7 @@ const Locator = () => {
       .catch((err) => {
         console.error(err);
       });
-  });
+  }, []);
 
   const [currVenueName, setCurrVenueName] = useState("default");
 

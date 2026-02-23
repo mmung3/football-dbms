@@ -45,31 +45,35 @@ const ViewAthleteModal = ({
   const [athlete, setAthlete] = useState({});
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:65535/athlete/${person_id}`)
-      .then((res) => {
-        setAthlete(res.data[0]);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+    if (person_id) {
+      axios
+        .get(`http://localhost:65535/athlete/${person_id}`)
+        .then((res) => {
+          setAthlete(res.data[0]);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
   }, [person_id, showViewAthlete]);
 
   const [awards, setAwards] = useState("");
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:65535/awards/athlete/${person_id}`)
-      .then((res) => {
-        const arrAwards = res.data.map((d) => {
-          return `${d.year} ${d.award_name}`;
+    if (person_id) {
+      axios
+        .get(`http://localhost:65535/awards/athlete/${person_id}`)
+        .then((res) => {
+          const arrAwards = res.data.map((d) => {
+            return `${d.year} ${d.award_name}`;
+          });
+          const strAwards = arrAwards.join(", ");
+          setAwards(strAwards);
+        })
+        .catch((err) => {
+          console.error(err);
         });
-        const strAwards = arrAwards.join(", ");
-        setAwards(strAwards);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+    }
   }, [person_id, showViewAthlete]);
 
   return (

@@ -71,7 +71,7 @@ export const athleteFormHasErrors = async (athlete) => {
     )
   ) {
     errors.push(
-      "Invalid address format, no symbol except , and . are allowed.",
+      "Invalid address format, no symbol except , and . are allowed. Example: 123 Main St, City",
     );
   }
 

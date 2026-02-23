@@ -3,7 +3,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
-const Game = ({ game_date, home, home_goals, away, away_goals }) => {
+const Game = ({ game_date, home_team, home_goals, away_team, away_goals }) => {
   const teamNameStyle = {
     display: "flex",
     justifyContent: "left",
@@ -23,7 +23,7 @@ const Game = ({ game_date, home, home_goals, away, away_goals }) => {
         <Container>
           <Row>
             <Col xs="auto" style={teamNameStyle}>
-              <p style={{ marginBottom: 0 }}>{home}</p>
+              <p style={{ marginBottom: 0 }}>{home_team}</p>
             </Col>
             <Col style={teamScoreStyle}>
               <p style={{ marginBottom: 0 }}>{home_goals}</p>
@@ -31,7 +31,7 @@ const Game = ({ game_date, home, home_goals, away, away_goals }) => {
           </Row>
           <Row>
             <Col xs="auto" style={teamNameStyle}>
-              <p style={{ marginBottom: 0 }}>{away}</p>
+              <p style={{ marginBottom: 0 }}>{away_team}</p>
             </Col>
             <Col style={teamScoreStyle}>
               <p style={{ marginBottom: 0 }}>{away_goals}</p>
